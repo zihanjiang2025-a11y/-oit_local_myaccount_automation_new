@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Virtual environment
+.venv/
+venv/
+
+# macOS
+.DS_Store
+
+# IDEs
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Environment
+.env
+
+# Chrome profile
+data/chrome_profile/
+
+# Generated data
+data/admin_id_workspace.csv
+data/current_admin_id_result.csv
+data/admin_id_archive/
+data/workspace.csv

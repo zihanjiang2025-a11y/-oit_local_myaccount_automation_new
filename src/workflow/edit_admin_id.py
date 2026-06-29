@@ -1,0 +1,169 @@
+from src.my_account.admin_id import (load_applications, get_current_admin_id, build_admin_id_confirmation_rows,
+                                    validate_and_mark_confirmation_rows, create_admin_id_tasks, excecute_admin_id_tasks,
+                                    get_single_admin_id_of_app_and_login)
+from typing import TYPE_CHECKING
+from src.models.user_workspace import UserWorkspace
+from src.models.admin_id_models import AdminIDOperation, AdminIdHistoryEntry, AdminIDRow
+import src.logger as logger
+from src.my_account.page import load_new_page, MyAccountPage
+import src.storage as storage
+from src.config import ADMIN_ID_WORKSPACE, ADMIND_ID_DISPLAY_PATH
+from datetime import datetime
+if TYPE_CHECKING:
+    from src.session_manager import SessionManager
+
+def edit_admin_ids(manager: "SessionManager", application_code: str, operation: AdminIDOperation):
+
+    logger.section("Admin ID Edit:")
+
+    workspaces = manager.workspaces.values()
+
+    application = search_for_application(manager, application_code)
+
+    confirmation_rows = build_admin_id_confirmation_rows(workspaces, application, operation)
+    storage.write_records_to_csv(confirmation_rows, ADMIN_ID_WORKSPACE)
+
+    logger.prompt("Please press after filling fields with 'FILL THIS' and typing 'yes' into confirmed fields")
+
+    updated_rows = storage.load_rows_from_csv(ADMIN_ID_WORKSPACE)
+    errors = validate_and_mark_confirmation_rows(updated_rows, confirmation_rows)
+
+    while errors:
+        for error in errors:
+            logger.warning(error)
+        storage.write_records_to_csv(updated_rows, ADMIN_ID_WORKSPACE)
+        
+        logger.prompt("Please press enter after filling fields with 'FILL THIS' and typing 'yes' into confirmed fields")
+
+        updated_rows = storage.load_rows_from_csv(ADMIN_ID_WORKSPACE)
+        errors = validate_and_mark_confirmation_rows(updated_rows, confirmation_rows)
+    
+    while logger.prompt(
+        "Validation complete. Do a final CSV check, then type 'ready' to generate tasks:"
+    ).strip().casefold() != "ready":
+        logger.warning("Tasks were not generated. Type 'ready' after the final check.")
+
+    tasks = create_admin_id_tasks(updated_rows)
+    logger.divider()
+    logger.success(f"Generated {len(tasks)} validated Admin ID task(s).")
+
+    logger.info("Performing AdminID Tasks...")
+    history_records = excecute_admin_id_tasks(manager, tasks)
+    logger.success("AdminID tasks performed.")
+
+    path = generate_new_record_file()
+
+    logger.success("AdminID operations logged in file: " + path)
+
+    create_file_write_records(manager, history_records, path)
+
+    
+
+def get_admin_ids_for_application(manager: "SessionManager", app_code: str) -> None:
+    
+    logger.divider()
+    logger.info("Getting current AdminIDs of application: " + app_code + " for all users.")
+
+    results = []
+    rows = []
+
+    workspaces = manager.workspaces.values()
+    for workspace in workspaces:
+        if not workspace.is_active():
+            continue
+        load_new_page(manager, workspace, MyAccountPage.ADMINID_CURRENT)
+        
+    for workspace in workspaces:
+        if not workspace.is_active():
+            continue
+        results.append(get_single_admin_id_of_app_and_login(manager.driver, workspace, app_code))
+
+    for result in results:
+        if not result["admin_id_row"]:
+            admin_id_row : AdminIDRow
+            row = {}
+            row["brown_id"] = result["brown_id"]
+            row["brown_login"] = result["brown_login"]
+            row["application_code"] = result["application_code"]
+
+            if len(result["admin_id_row"]) > 1:
+                row["total_found"] = len(result["admin_id_row"])
+            row["notes"] = result["notes"]
+            rows.append(row)
+        #TODO: make this loop able to handle when nothing's in admin_id_row but still show the reult.
+        for admin_id_row in result["admin_id_row"]:
+            admin_id_row : AdminIDRow
+            row = {}
+            row["brown_id"] = result["brown_id"]
+            row["brown_login"] = result["brown_login"]
+            
+            dict_row = admin_id_row.get_dict_of_row()
+            row |= dict_row
+            if len(result["admin_id_row"]) > 1:
+                row["total_found"] = len(result["admin_id_row"])
+            row["notes"] = result["notes"]
+            rows.append(row)
+
+        
+
+    storage.write_records_to_csv(rows, ADMIND_ID_DISPLAY_PATH)
+    logger.success("AdminIDs for application: " + app_code + " for all users have been updated in current_admin_id_result.")
+
+    return rows
+        
+            
+                
+
+                
+        
+
+
+    
+
+    
+    
+    
+
+    
+def search_for_application(manager: "SessionManager", application_code: str):
+
+    workspaces = manager.workspaces.values()
+
+    selected_workspace = None
+    for workspace in workspaces:
+        if workspace.is_active():
+            selected_workspace = workspace
+    
+    if selected_workspace is None:
+        raise RuntimeError("No user found yet, cannot load applications")
+    
+    applications = load_applications(manager.driver, selected_workspace)
+
+    if application_code not in applications.keys():
+        logger.warning("Cannot find application code: [" + application_code + "]")
+        raise ValueError("Cannot find application code.")
+    else:
+        logger.success("Found appllication: [" + application_code + "] as '" + applications[application_code].name + "'.")
+
+    return applications[application_code]
+
+def generate_new_record_file() -> str:
+    filename = (
+    "data/admin_id_archive/admin_id_run_"
+    + datetime.now().strftime(
+        "%Y%m%d_%H%M%S"
+    )
+    + ".csv")
+
+    return filename
+
+
+
+def create_file_write_records(manager: "SessionManager", history_entries: list[AdminIdHistoryEntry], path: str):
+
+    rows = []
+
+    for entry in history_entries:
+        rows.append(entry.history_entry_to_row())
+    
+    storage.write_records_to_csv(rows, path)
