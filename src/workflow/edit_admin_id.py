@@ -51,7 +51,7 @@ def edit_admin_ids(manager: "SessionManager", application_code: str, operation: 
     history_records = excecute_admin_id_tasks(manager, tasks)
     logger.success("AdminID tasks performed.")
 
-    path = generate_new_record_file()
+    path = generate_new_record_file_name()
 
     logger.success("AdminID operations logged in file: " + path)
 
@@ -147,7 +147,7 @@ def search_for_application(manager: "SessionManager", application_code: str):
 
     return applications[application_code]
 
-def generate_new_record_file() -> str:
+def generate_new_record_file_name() -> str:
     filename = (
     "data/admin_id_archive/admin_id_run_"
     + datetime.now().strftime(
