@@ -1,5 +1,9 @@
 from dotenv import load_dotenv
 import os
+from pathlib import Path
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+DATA_DIR = PROJECT_ROOT / "data"
+
 
 load_dotenv()
 
@@ -21,9 +25,9 @@ PASSWORD = os.environ["MYACCOUNT_PASSWORD"]
 MAX_SEARCHES = 3
 
 #Browser Settings
-PROFILE_PATH = os.environ["BROWSER_PROFILE_PATH"]
+PROFILE_PATH = DATA_DIR / "chrome_profile"
 
-ADMIND_ID_DISPLAY_PATH = os.environ["ADMIND_ID_DISPLAY_FILE_PATH"]
+ADMIND_ID_DISPLAY_PATH = DATA_DIR / "current_admin_id_result.csv"
 
 #Storage and Data Settings:
 WORKSPACE_PATH = "data/workspace.csv"
