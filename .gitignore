@@ -22,6 +22,9 @@ venv/
 # Chrome profile
 data/chrome_profile/
 
+# Design Files
+*.pages
+
 # Generated data
 data/admin_id_workspace.csv
 data/current_admin_id_result.csv
