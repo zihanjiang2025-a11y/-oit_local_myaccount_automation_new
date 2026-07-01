@@ -123,19 +123,6 @@ def get_admin_ids_for_application(manager: "SessionManager", app_code: str) -> d
     logger.success("AdminIDs for application: " + app_code + " for all users have been extracted and outputed in file: current_admin_id_result.")
 
     return brown_login_to_admin_id_row
-        
-            
-                
-
-                
-        
-
-
-    
-
-    
-    
-    
 
     
 def search_for_application(manager: "SessionManager", application_code: str):
@@ -169,8 +156,6 @@ def generate_new_record_file_name() -> str:
     + ".csv")
 
     return filename
-
-
 
 def create_file_write_records(manager: "SessionManager", history_entries: list[AdminIdHistoryEntry], path: str):
 

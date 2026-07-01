@@ -601,6 +601,8 @@ def excecute_admin_id_tasks(manager: "SessionManager", tasks: list[AdminIdTask])
     history_records_add = []
     history_records_revoke = []
     history_records_blocked = []
+    history_records_purge = []
+    
     for task in bloacked_tasks:
         history_records_blocked.append(task.commit_to_history())
 
