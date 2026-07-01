@@ -19,11 +19,20 @@ def edit_admin_ids(manager: "SessionManager", application_code: str, operation: 
     workspaces = manager.workspaces.values()
 
     application = search_for_application(manager, application_code)
+    get_admin_ids_for_application(manager, application.code)
+
+    while True:
+        to_proceed = logger.prompt("Please choose whether to proceed to generate confirmation rows (Y/N): ")
+        if to_proceed.strip().lower() == "n":
+            return
+        elif to_proceed.strip().lower() == "y":
+            break
+
 
     confirmation_rows = build_admin_id_confirmation_rows(workspaces, application, operation)
     storage.write_records_to_csv(confirmation_rows, ADMIN_ID_WORKSPACE)
 
-    logger.prompt("Please press after filling fields with 'FILL THIS' and typing 'yes' into confirmed fields")
+    logger.prompt("Please press Enter after filling fields with 'FILL THIS' and typing 'yes' into confirmed fields")
 
     updated_rows = storage.load_rows_from_csv(ADMIN_ID_WORKSPACE)
     errors = validate_and_mark_confirmation_rows(updated_rows, confirmation_rows)
@@ -33,7 +42,7 @@ def edit_admin_ids(manager: "SessionManager", application_code: str, operation: 
             logger.warning(error)
         storage.write_records_to_csv(updated_rows, ADMIN_ID_WORKSPACE)
         
-        logger.prompt("Please press enter after filling fields with 'FILL THIS' and typing 'yes' into confirmed fields")
+        logger.prompt("Please press Enter after filling fields with 'FILL THIS' and typing 'yes' into confirmed fields")
 
         updated_rows = storage.load_rows_from_csv(ADMIN_ID_WORKSPACE)
         errors = validate_and_mark_confirmation_rows(updated_rows, confirmation_rows)
@@ -59,12 +68,13 @@ def edit_admin_ids(manager: "SessionManager", application_code: str, operation: 
 
     
 
-def get_admin_ids_for_application(manager: "SessionManager", app_code: str) -> None:
+def get_admin_ids_for_application(manager: "SessionManager", app_code: str) -> dict[str, AdminIDRow]:
     
     logger.divider()
     logger.info("Getting current AdminIDs of application: " + app_code + " for all users.")
 
     results = []
+    brown_login_to_admin_id_row = {}
     rows = []
 
     workspaces = manager.workspaces.values()
@@ -78,38 +88,41 @@ def get_admin_ids_for_application(manager: "SessionManager", app_code: str) -> N
             continue
         results.append(get_single_admin_id_of_app_and_login(manager.driver, workspace, app_code))
 
+
     for result in results:
-        if not result["admin_id_row"]:
-            admin_id_row : AdminIDRow
-            row = {}
-            row["brown_id"] = result["brown_id"]
-            row["brown_login"] = result["brown_login"]
-            row["application_code"] = result["application_code"]
+        admin_id_rows = result.get("admin_id_row") or []
+        brown_login_to_admin_id_row[result["brown_login"]] = admin_id_rows
 
-            if len(result["admin_id_row"]) > 1:
-                row["total_found"] = len(result["admin_id_row"])
-            row["notes"] = result["notes"]
+        if not admin_id_rows:
+            row = {
+                "brown_id": result["brown_id"],
+                "brown_login": result["brown_login"],
+                "application_code": result["application_code"],
+                "notes": result.get("notes", ""),
+            }
             rows.append(row)
-        #TODO: make this loop able to handle when nothing's in admin_id_row but still show the reult.
-        for admin_id_row in result["admin_id_row"]:
-            admin_id_row : AdminIDRow
-            row = {}
-            row["brown_id"] = result["brown_id"]
-            row["brown_login"] = result["brown_login"]
-            
-            dict_row = admin_id_row.get_dict_of_row()
-            row |= dict_row
-            if len(result["admin_id_row"]) > 1:
-                row["total_found"] = len(result["admin_id_row"])
-            row["notes"] = result["notes"]
-            rows.append(row)
+            continue
 
-        
+        total_found = len(admin_id_rows)
+
+        for admin_id_row in admin_id_rows:
+            row = {
+                "brown_id": result["brown_id"],
+                "brown_login": result["brown_login"],
+            }
+
+            row |= admin_id_row.get_dict_of_row()
+
+            if total_found > 1:
+                row["total_found"] = total_found
+
+            row["notes"] = result.get("notes", "")
+            rows.append(row)
 
     storage.write_records_to_csv(rows, ADMIND_ID_DISPLAY_PATH)
-    logger.success("AdminIDs for application: " + app_code + " for all users have been updated in current_admin_id_result.")
+    logger.success("AdminIDs for application: " + app_code + " for all users have been extracted and outputed in file: current_admin_id_result.")
 
-    return rows
+    return brown_login_to_admin_id_row
         
             
                 
