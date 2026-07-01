@@ -7,7 +7,7 @@ from src.browser import close_tab
 from src.definitions import StatusSearchType
 from src.my_account.page import MyAccountPage
 from src.models.admin_id_models import AdminIDOperation
-
+from src.config import WORKSPACE_PATH
 
 
 class SessionManager:
@@ -35,6 +35,23 @@ class SessionManager:
         for user_ids in multiple_user_ids_statuses:
             new_records.append(self.register_user_record(user_ids))
         return new_records
+
+    def clear_registered_users(self) -> None:
+        for workspace in list(self.workspaces.values()):
+            if not workspace.has_handle():
+                continue
+            try:
+                close_tab(self.driver, workspace.handle)
+                if self.driver.window_handles:
+                    self.driver.switch_to.window(self.driver.window_handles[0])
+            except Exception as exc:
+                logger.warning(f"Could not close tab for user {workspace.user_record.short_id}: {exc}")
+
+        self.next_available_id = 0
+        self.user_records = {}
+        self.workspaces = {}
+        self.handle_to_workspace = {}
+        self.brown_id_to_workspace = {}
 
 
     def register_user_record(self, user_ids_statuses: dict[str, str]) -> UserRecord:
@@ -106,7 +123,7 @@ class SessionManager:
     
     
 
-    def commit_user_record_updates(self, path: str) -> None:
+    def commit_user_record_updates(self, path: str = WORKSPACE_PATH) -> None:
         for workspace in self.workspaces.values():
             workspace.commit_updates()
     
@@ -135,5 +152,3 @@ class SessionManager:
         self.pair_handle_to_workspace(handle, workspace)
 
         
-
-
