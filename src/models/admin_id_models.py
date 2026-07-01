@@ -243,6 +243,16 @@ REQUIRED_BY_OPERATION = {
         "expiry_date",
         "comments",
     },
+
+    AdminIDOperation.PURGE: {
+        "confirmed",
+        "brown_id",
+        "brown_login",
+        "application_id",
+        "application_code",
+        "login_id",
+        "operation",
+    },
 }
 
 REQUIRED_BY_SOURCE_FOR_ADD = {

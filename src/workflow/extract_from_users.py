@@ -15,9 +15,10 @@ def extract_users_ids_workflow(manager: "SessionManager", ids_extracting: list[s
 
     
 
-def extract_users_status_workflow(manager, search_type: StatusSearchType):
+def extract_users_status_workflow(manager: "SessionManager", search_type: StatusSearchType):
     
     get_users_statuses(manager, search_type)
+    manager.commit_user_record_updates()
 
 
     

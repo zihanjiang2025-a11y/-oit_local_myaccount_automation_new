@@ -627,10 +627,10 @@ def excecute_admin_id_tasks(manager: "SessionManager", tasks: list[AdminIdTask])
         revoke_admin_ids(manager, operation_menu[AdminIDOperation.REVOKE])
         history_records_revoke = get_history_records(driver, operation_menu[AdminIDOperation.REVOKE])
     if AdminIDOperation.PURGE in operation_menu.keys():
-        task.success = False
-        task.append_notes("Purge is not supported currently.")
+        purge_admin_ids(manager, operation_menu[AdminIDOperation.PURGE])
+        history_records_purge = get_history_records(driver, operation_menu[AdminIDOperation.PURGE])
     
-    return history_records_add + history_records_revoke + history_records_blocked
+    return history_records_add + history_records_revoke + history_records_purge + history_records_blocked
     
         
 def add_admin_ids(manager: "SessionManager",
@@ -663,6 +663,25 @@ def revoke_admin_ids(manager: "SessionManager",
     
     for task, workspace in task_to_workspace.items():
         perform_revoke(driver, workspace, task)
+
+
+def purge_admin_ids(manager: "SessionManager",
+                task_to_workspace: dict[AdminIdTask, UserWorkspace]) -> list[AdminIdHistoryEntry]:
+    driver = manager.driver
+
+    for workspace in task_to_workspace.values():
+        driver.switch_to.window(workspace.handle)
+        url = driver.current_url
+
+        target_url = get_url(workspace.get_identity_info(PersonalInfo.BROWN_ID),
+                             MyAccountPage.ADMINID_CURRENT)
+            
+        if url != target_url:
+            load_new_page(manager, workspace, MyAccountPage.ADMINID_CURRENT)
+    
+    for task, workspace in task_to_workspace.items():
+        perform_purge(manager, workspace, task)
+    
 
 def perform_add(driver: WebDriver, workspace: UserWorkspace, task: AdminIdTask) -> AdminIdHistoryEntry:
 
@@ -809,6 +828,15 @@ def perform_revoke(driver: WebDriver, workspace: UserWorkspace, task: AdminIdTas
     add_to_comment(comments_box, task.comments)
 
     save_button.click()
+
+def perform_purge(manager: "SessionManager", workspace: UserWorkspace, task: AdminIdTask):
+    driver = manager.driver
+    if not task_matches_workspace(task, workspace):
+        raise RuntimeError("The task and the workspace represent different users.")
+
+    driver.switch_to.window(workspace.handle)
+
+    load_new_page(manager, workspace, MyAccountPage.ADMIN_ID_PURGE, task.admind_id_reference)
 
 
 def eligible_to_perform(driver: WebDriver, worksapce: UserWorkspace, task: AdminIdTask) -> bool:
