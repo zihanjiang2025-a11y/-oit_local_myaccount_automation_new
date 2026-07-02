@@ -1,6 +1,6 @@
 from src.definitions import (PersonalInfo, SEARCH_FIELDS, EXTRACTABLE_IDS, EXTRACTABLE_STATUS,
 UserSearchStatus, StatusSearchType, BannerStatus, WorkdayStatus, OIMStatus,
-ALL_STATUS_FIELDS, WorkspaceDocumentations, WORKSPACE_IDENTIFICATIONS)
+ALL_STATUS_FIELDS, WorkspaceDocumentations, WORKSPACE_IDENTIFICATIONS, SEARCH_PAGE_IDS)
 from src.config import MAX_SEARCHES
 from typing import TYPE_CHECKING
 from src.models.admin_id_models import AdminIdTask
@@ -19,6 +19,7 @@ class UserWorkspace:
         self.user_actions = []
 
         self.identities = self._make_empty_identities()
+        self.hidden_ids = {}
         self.documentations = self._make_empty_documentations()
         self.handle = None
         self.admin_id_task = AdminIdTask
@@ -86,7 +87,10 @@ class UserWorkspace:
             self.documentations[WorkspaceDocumentations.FOUND_THROUGH] = self.searches[found_through_index]
 
             for identity_type, identity_info in new_identities.items():
-                self.update_identify_info(identity_type, identity_info)
+                if identity_type in self.identities.keys():
+                    self.update_identify_info(identity_type, identity_info)
+                elif identity_type in SEARCH_PAGE_IDS:
+                    self.set_hidden_id(identity_type, new_identities[identity_type])
         else:
             if new_identities is not None:
                 raise TypeError("If a user is not confirmed, a brown_id or log_in cannot be passed")
@@ -157,6 +161,7 @@ class UserWorkspace:
             for field in WORKSPACE_IDENTIFICATIONS
         }
     
+    
     def _make_empty_documentations(self) -> dict:
 
         docs = {
@@ -176,6 +181,26 @@ class UserWorkspace:
             for source, statuses in EXTRACTABLE_STATUS.items()
         }
     
+    def set_hidden_id(self, id_type: PersonalInfo, id_value: str) -> None:
+        if self.id_is_found_and_shown(id_type):
+            raise ValueError("Ids extracted previously cannot be set as hidden.")
+        
+        if id_type not in SEARCH_PAGE_IDS:
+            raise ValueError("Such id_type is supported to be hidden.")
+        
+        self.hidden_ids[id_type] = id_value
+
+    def release_hidden_id(self, id_type: PersonalInfo) -> None:
+        if id_type not in SEARCH_PAGE_IDS:
+            raise ValueError("id_type: " + id_type + " cannot be hidden/released.")
+        
+        if id_type in WORKSPACE_IDENTIFICATIONS:
+            return
+        
+        if id_type in self.hidden_ids.keys():
+            self.extracted_ids[id_type] = self.hidden_ids[id_type]
+
+
     def set_handle(self, handle: str) -> None:
         self.handle = handle
     
@@ -195,6 +220,16 @@ class UserWorkspace:
             raise ("Such identity_type not supported.")
         
         return self.identities[identity_type]
+    
+    def id_is_found_and_shown(self, id_type: PersonalInfo) -> bool:
+        if id_type not in vars(PersonalInfo).values():
+            raise ValueError(id_type + " is not a valid id_type.")
+        
+        if id_type in self.extracted_ids.keys():
+            if not (self.extracted_ids[id_type] is None or self.self.extracted_ids[id_type] == ""):
+                return True
+        
+        return False
     
     def get_status(
         self,

@@ -31,6 +31,11 @@ class SearchResultPage:
         "//b[normalize-space()='Middle Name:']/following-sibling::div[1]"
     )
 
+    MIDDLE_NAME = (
+        By.XPATH,
+        "//b[normalize-space()='Middle Name:']/following-sibling::div[1]"
+    )
+
     BROWN_EMAIL = (
         By.XPATH,
         "//b[normalize-space()='Brown Email:']/following-sibling::div[1]"
@@ -52,6 +57,8 @@ class SearchResultPage:
         FIRST_NAME,
     PersonalInfo.LAST_NAME:
         LAST_NAME,
+    PersonalInfo.MIDDLE_NAME:
+        MIDDLE_NAME,
     PersonalInfo.BROWN_LOGIN:
         BROWN_LOGIN,
     PersonalInfo.BROWN_EMAIL:

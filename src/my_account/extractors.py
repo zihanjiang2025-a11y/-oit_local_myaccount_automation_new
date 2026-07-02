@@ -37,10 +37,13 @@ def get_users_ids(manager: "SessionManager", ids_extracting: list[str]) -> None:
             if not workspace.is_active():
                 continue
 
+            for id_type in search_page_ids:
+                workspace.release_hidden_id(id_type)
+            '''
             ids = get_ids_from_page(driver, workspace.handle, search_page_ids)
             for id_type, id in ids.items():
                 workspace.extracted_ids[id_type] = id
-                #TODO: provide manual override request when the existing id doesn't match with the newly extracted one.
+            '''
 
     if overview_page_ids:
         for workspace in workspaces:
@@ -58,6 +61,7 @@ def get_users_ids(manager: "SessionManager", ids_extracting: list[str]) -> None:
 
 def get_ids_from_page(driver: WebDriver, handle: str, ids_extracting: list[str]) -> dict[str, str]:
     driver.switch_to.window(handle)
+
     ids_extracted = {}
     for id_type in ids_extracting:
         if id_type == PersonalInfo.BROWN_ID:

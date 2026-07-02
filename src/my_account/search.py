@@ -9,7 +9,7 @@ from src.models.user_workspace import UserWorkspace
 from src.my_account.locator import SearchResultPage
 from src.my_account.extractors import get_ids_from_page
 from src.browser import open_new_tab_get_handle
-from src.definitions import PersonalInfo, SEARCH_FIELDS
+from src.definitions import PersonalInfo, SEARCH_FIELDS, SEARCH_PAGE_IDS
 import re
 from typing import TYPE_CHECKING
 
@@ -73,7 +73,7 @@ def search_users(manager: "SessionManager", workspaces: list[UserWorkspace], rou
         is_found = get_search_result_state(driver, workspace)
             
         if is_found == UserSearchStatus.FOUND:
-            identifications_extracted = get_ids_from_page(driver, workspace.handle, list(WORKSPACE_IDENTIFICATIONS))
+            identifications_extracted = get_ids_from_page(driver, workspace.handle, list(SEARCH_PAGE_IDS))
             workspace.update_found(UserSearchStatus.FOUND, round, identifications_extracted)
 
         elif (is_found == UserSearchStatus.MULTIPLE_MATCHES):
