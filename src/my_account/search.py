@@ -10,6 +10,7 @@ from src.my_account.locator import SearchResultPage
 from src.my_account.extractors import get_ids_from_page
 from src.browser import open_new_tab_get_handle
 from src.definitions import PersonalInfo, SEARCH_FIELDS, SEARCH_PAGE_IDS
+from src.control import check_for_control_command
 import re
 from typing import TYPE_CHECKING
 
@@ -57,6 +58,7 @@ def search_users(manager: "SessionManager", workspaces: list[UserWorkspace], rou
     next_round_search_workspaces = []
 
     for workspace in workspaces:
+        check_for_control_command()
         if round > len(workspace.searches):
             workspace.conclude_search()
             continue
@@ -68,6 +70,7 @@ def search_users(manager: "SessionManager", workspaces: list[UserWorkspace], rou
             next_round_search_workspaces.append(workspace)
 
     for workspace in workspaces:
+        check_for_control_command()
         if workspace in no_search_list:
             continue
         is_found = get_search_result_state(driver, workspace)

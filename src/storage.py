@@ -1,5 +1,6 @@
 import pandas as pd
 from src.definitions import SEARCH_FIELDS
+from src.control import controlled_input
 
 def load_rows_from_csv(path: str) -> list[dict]:
     df = pd.read_csv(
@@ -32,7 +33,7 @@ def ask_search_fields(columns: list[str]) -> list[str]:
     for i, col in enumerate(columns):
         print(f"{i}: {col}")
 
-    raw = input("Enter column numbers to use as search fields, separated by commas: ")
+    raw = controlled_input("Enter column numbers to use as search fields, separated by commas: ")
     indexes = [int(x.strip()) for x in raw.split(",") if x.strip()]
 
     return [columns[i] for i in indexes]
@@ -42,7 +43,7 @@ def ask_extract_fields(available_fields: list[str]) -> list[str]:
     for i, field in enumerate(available_fields):
         print(f"{i}: {field}")
 
-    raw = input("Enter fields to extract, separated by commas: ")
+    raw = controlled_input("Enter fields to extract, separated by commas: ")
     indexes = [int(x.strip()) for x in raw.split(",") if x.strip()]
 
     return [available_fields[i] for i in indexes]

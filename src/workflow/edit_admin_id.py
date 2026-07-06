@@ -8,6 +8,7 @@ import src.logger as logger
 from src.my_account.page import load_new_page, MyAccountPage
 import src.storage as storage
 from src.config import ADMIN_ID_WORKSPACE, ADMIND_ID_DISPLAY_PATH
+from src.control import check_for_control_command
 from datetime import datetime
 if TYPE_CHECKING:
     from src.session_manager import SessionManager
@@ -23,16 +24,16 @@ def edit_admin_ids(manager: "SessionManager", application_code: str, operation: 
 
     while True:
         to_proceed = logger.prompt("Please choose whether to proceed to generate confirmation rows (Y/N): ")
-        if to_proceed.strip().lower() == "n":
+        if to_proceed.strip().casefold() == "n":
             return
-        elif to_proceed.strip().lower() == "y":
+        elif to_proceed.strip().casefold() == "y":
             break
 
 
     confirmation_rows = build_admin_id_confirmation_rows(workspaces, application, operation)
     storage.write_records_to_csv(confirmation_rows, ADMIN_ID_WORKSPACE)
 
-    logger.prompt("Please press Enter after filling fields with 'FILL THIS' and typing 'yes' into confirmed fields")
+    wait_for_confirmation_verification()
 
     updated_rows = storage.load_rows_from_csv(ADMIN_ID_WORKSPACE)
     errors = validate_and_mark_confirmation_rows(updated_rows, confirmation_rows)
@@ -42,7 +43,7 @@ def edit_admin_ids(manager: "SessionManager", application_code: str, operation: 
             logger.warning(error)
         storage.write_records_to_csv(updated_rows, ADMIN_ID_WORKSPACE)
         
-        logger.prompt("Please press Enter after filling fields with 'FILL THIS' and typing 'yes' into confirmed fields")
+        wait_for_confirmation_verification()
 
         updated_rows = storage.load_rows_from_csv(ADMIN_ID_WORKSPACE)
         errors = validate_and_mark_confirmation_rows(updated_rows, confirmation_rows)
@@ -67,6 +68,16 @@ def edit_admin_ids(manager: "SessionManager", application_code: str, operation: 
     create_file_write_records(manager, history_records, path)
 
     
+def wait_for_confirmation_verification() -> None:
+    while True:
+        response = logger.prompt(
+            "After filling fields with 'FILL THIS' and typing 'yes' into confirmed fields, "
+            "type 'verify' to verify the updated rows:"
+        )
+        if response.strip().casefold() == "verify":
+            return
+        logger.warning("Rows were not verified. Type 'verify' when the confirmation CSV is ready.")
+
 
 def get_admin_ids_for_application(manager: "SessionManager", app_code: str) -> dict[str, AdminIDRow]:
     
@@ -79,11 +90,13 @@ def get_admin_ids_for_application(manager: "SessionManager", app_code: str) -> d
 
     workspaces = manager.workspaces.values()
     for workspace in workspaces:
+        check_for_control_command()
         if not workspace.is_active():
             continue
         load_new_page(manager, workspace, MyAccountPage.ADMINID_CURRENT)
         
     for workspace in workspaces:
+        check_for_control_command()
         if not workspace.is_active():
             continue
         results.append(get_single_admin_id_of_app_and_login(manager.driver, workspace, app_code))
@@ -131,6 +144,7 @@ def search_for_application(manager: "SessionManager", application_code: str):
 
     selected_workspace = None
     for workspace in workspaces:
+        check_for_control_command()
         if workspace.is_active():
             selected_workspace = workspace
     

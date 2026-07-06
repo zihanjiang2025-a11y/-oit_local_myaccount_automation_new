@@ -32,4 +32,6 @@ def section(title: str) -> None:
 
 
 def prompt(message: str) -> str:
-    return input(f"{PREFIX} [INPUT] {message} ")
+    from src.control import controlled_input
+
+    return controlled_input(f"{PREFIX} [INPUT] {message} ")

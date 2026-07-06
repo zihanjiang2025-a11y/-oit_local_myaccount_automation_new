@@ -2,15 +2,13 @@ from collections.abc import Callable
 from dataclasses import dataclass
 
 from src.config import WORKSPACE_PATH
+from src.control import QuitProgram, StopTask, controlled_input
 from src.definitions import EXTRACTABLE_IDS, SEARCH_FIELDS, StatusSearchType
 from src.models.admin_id_models import AdminIDOperation
 from src.my_account.page import MyAccountPage
 from src.session_manager import SessionManager
 from src.storage import load_rows_from_csv
 import src.logger as logger
-
-
-EXIT_COMMANDS = {"exit", "quit"}
 
 
 @dataclass(frozen=True)
@@ -25,6 +23,7 @@ class MyAccountShell:
         self.workspace_path = workspace_path
         self.manager = None
         self.commands = self._build_commands()
+        self.running = True
 
     def run(self) -> None:
         self._print_banner()
@@ -32,9 +31,15 @@ class MyAccountShell:
         self.manager.initilize()
         self._load_workspace()
 
-        while True:
+        while self.running:
             try:
-                raw_command = input("myaccount> ").strip()
+                raw_command = controlled_input("myaccount> ").strip()
+            except StopTask:
+                logger.info("No task is running.")
+                continue
+            except QuitProgram:
+                self._handle_exit([])
+                return
             except (EOFError, KeyboardInterrupt):
                 print()
                 self._handle_exit([])
@@ -44,9 +49,12 @@ class MyAccountShell:
                 continue
 
             command_name, args = self._parse_command(raw_command)
-            if command_name in EXIT_COMMANDS:
+            if command_name in {"exit", "quit"}:
                 self._handle_exit(args)
                 return
+            if command_name in {"stop-task", "stop"}:
+                self._handle_stop(args)
+                continue
 
             command = self.commands.get(command_name)
             if command is None:
@@ -72,6 +80,7 @@ class MyAccountShell:
         registered = {command.name: command for command in commands}
         registered["reload-user"] = registered["reload"]
         registered["reload-users"] = registered["reload"]
+        registered["stop-task"] = registered["stop"]
         return registered
 
     def _print_banner(self) -> None:
@@ -90,13 +99,18 @@ class MyAccountShell:
         logger.info(
             "Running command. Selenium may switch browser tabs now; "
             "wait for the myaccount> prompt before entering another command. "
-            "Press Ctrl+C to stop the current task and return to the shell."
+            "Type stop-task at any prompt to return to the shell, or quit to end the program."
         )
         try:
             command.handler(self, args)
+        except StopTask:
+            logger.warning("Current task stopped. Returned to the main menu.")
+        except QuitProgram:
+            self._handle_exit([])
+            self.running = False
         except KeyboardInterrupt:
             print()
-            logger.warning("Current task stopped. Browser session is still open.")
+            logger.warning("Current task stopped. Returned to the main menu.")
         #except Exception as exc:
             #logger.error(f"{command.name} failed: {exc}")
         #else:
@@ -117,8 +131,9 @@ class MyAccountShell:
             "open-page",
             "save",
             "reload",
-            "stop",
+            "stop-task",
             "exit",
+            "quit",
         ]:
             print(name)
 
@@ -139,11 +154,11 @@ class MyAccountShell:
         self.manager.extract_users_status(search_type)
 
     def _handle_get_admin_ids(self, args: list[str]) -> None:
-        application_code = args[0] if args else input("Application code:\n> ").strip()
+        application_code = args[0] if args else controlled_input("Application code:\n> ").strip()
         self.manager.get_admin_ids(application_code)
 
     def _handle_edit_admin_ids(self, args: list[str]) -> None:
-        application_code = args[0] if args else input("Application code:\n> ").strip()
+        application_code = args[0] if args else controlled_input("Application code:\n> ").strip()
         operation = self._read_admin_id_operation(args[1:])
         self.manager.edit_admin_id(application_code, operation)
 
@@ -183,7 +198,7 @@ class MyAccountShell:
         print("2. Revoke")
         print("3. Purge")
         while True:
-            selected = choices.get(input("> ").strip().lower())
+            selected = choices.get(controlled_input("> ").strip().lower())
             if selected is not None:
                 return selected
             logger.warning("Choose 1, 2, 3, add, revoke, or purge.")
@@ -204,7 +219,7 @@ class MyAccountShell:
 
         groups = []
         while len(groups) < 3:
-            raw = input(f"Round {len(groups) + 1}> ").strip()
+            raw = controlled_input(f"Round {len(groups) + 1}> ").strip()
             if not raw:
                 break
             groups.append(set(self._resolve_fields(raw, available_fields)))
@@ -219,7 +234,7 @@ class MyAccountShell:
 
         print(f"{label}:")
         self._print_numbered_options(available_fields)
-        raw = input("> ").strip()
+        raw = controlled_input("> ").strip()
         fields = self._resolve_fields(raw, available_fields)
         if not fields:
             raise ValueError("At least one field is required.")
@@ -234,7 +249,7 @@ class MyAccountShell:
         print(f"{label}:")
         self._print_numbered_options(choices, start=1)
         while True:
-            raw = input("> ").strip()
+            raw = controlled_input("> ").strip()
             if raw in choices:
                 return raw
             if raw.isdigit() and 1 <= int(raw) <= len(choices):
