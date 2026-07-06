@@ -20,7 +20,6 @@ from selenium.webdriver.common.keys import Keys
 from typing import TYPE_CHECKING
 from enum import Enum
 import re
-from src.control import check_for_control_command
 
 if TYPE_CHECKING:
 
@@ -582,7 +581,6 @@ def excecute_admin_id_tasks(manager: "SessionManager", tasks: list[AdminIdTask])
     bloacked_tasks: list[AdminIdTask | None] = []
 
     for task in tasks:
-        check_for_control_command()
         if task.brown_id not in manager.brown_id_to_workspace.keys():
             raise RuntimeError("Can't find UserWorkspace for such task.")
         
@@ -595,7 +593,6 @@ def excecute_admin_id_tasks(manager: "SessionManager", tasks: list[AdminIdTask])
     
 
     for task in tasks:
-        check_for_control_command()
         is_eligible = eligible_to_perform(driver, task_to_workspace[task], task)
         if is_eligible:
             if task.action in operation_menu.keys():
@@ -611,13 +608,11 @@ def excecute_admin_id_tasks(manager: "SessionManager", tasks: list[AdminIdTask])
     history_records_purge = []
 
     for task in bloacked_tasks:
-        check_for_control_command()
         history_records_blocked.append(task.commit_to_history())
 
     def get_history_records(driver: WebDriver, task_to_workspace: dict[AdminIdTask, UserWorkspace]) -> list[AdminIdHistoryEntry]:
         history_records = []
         for task, workspace in task_to_workspace.items():
-            check_for_control_command()
             result, message = read_admin_id_save_result(driver, workspace)
             if result is None:
                 task.success = False
@@ -648,11 +643,9 @@ def add_admin_ids(manager: "SessionManager",
                 task_to_workspace: dict[AdminIdTask, UserWorkspace]) -> list[AdminIdHistoryEntry]:
 
     for workspace in task_to_workspace.values():
-        check_for_control_command()
         load_new_page(manager, workspace, MyAccountPage.ADMIN_ID_EDIT)
 
     for task, workspace in task_to_workspace.items():
-        check_for_control_command()
         perform_add(manager.driver, workspace, task)
     
 
@@ -662,7 +655,6 @@ def revoke_admin_ids(manager: "SessionManager",
     driver = manager.driver
 
     for workspace in task_to_workspace.values():
-        check_for_control_command()
         driver.switch_to.window(workspace.handle)
         url = driver.current_url
 
@@ -673,11 +665,9 @@ def revoke_admin_ids(manager: "SessionManager",
             load_new_page(manager, workspace, MyAccountPage.ADMINID_CURRENT)
         
     for task, workspace in task_to_workspace.items():
-        check_for_control_command()
         load_new_page(manager, workspace, MyAccountPage.ADMIN_ID_EDIT, task.admind_id_reference)
     
     for task, workspace in task_to_workspace.items():
-        check_for_control_command()
         perform_revoke(driver, workspace, task)
 
 def purge_admin_ids(manager: "SessionManager",
@@ -685,7 +675,6 @@ def purge_admin_ids(manager: "SessionManager",
     driver = manager.driver
 
     for workspace in task_to_workspace.values():
-        check_for_control_command()
         driver.switch_to.window(workspace.handle)
         url = driver.current_url
 
@@ -696,7 +685,6 @@ def purge_admin_ids(manager: "SessionManager",
             load_new_page(manager, workspace, MyAccountPage.ADMINID_CURRENT)
     
     for task, workspace in task_to_workspace.items():
-        check_for_control_command()
         perform_purge(manager, workspace, task)
     
 

@@ -8,7 +8,6 @@ from src.definitions import PersonalInfo, SEARCH_PAGE_IDS, OVERVIEW_PAGE_IDS, Us
 from src.config import OVERVIEW_URL_TEMPLATE, PAGE_TIMEOUT
 from src.browser import wait_for_overview_page, open_new_tab_get_handle, close_tab, wait_for_student_page, wait_for_employee_page
 from src.my_account.page import load_new_page, MyAccountPage
-from src.control import check_for_control_command
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -35,7 +34,6 @@ def get_users_ids(manager: "SessionManager", ids_extracting: list[str]) -> None:
 
     if search_page_ids:
         for workspace in workspaces:
-            check_for_control_command()
             if not workspace.is_active():
                 continue
 
@@ -49,14 +47,12 @@ def get_users_ids(manager: "SessionManager", ids_extracting: list[str]) -> None:
 
     if overview_page_ids:
         for workspace in workspaces:
-            check_for_control_command()
             if not workspace.is_active():
                 continue
             
             load_new_page(manager, workspace, MyAccountPage.OVERVIEW)
             
         for workspace in workspaces:
-            check_for_control_command()
             ids = get_ids_from_profile(driver, workspace.handle, overview_page_ids)
             for id_type, id in ids.items():
                 workspace.extracted_ids[id_type] = id
@@ -115,7 +111,6 @@ def get_users_statuses(manager: "SessionManager", search_type: StatusSearchType)
         workday_statuses = get_users_single_source_status(manager, workspaces, StatusSearchType.WORKDAY_STATUS)
         
         for workspace in workspaces:
-            check_for_control_command()
             if workspace in oim_statuses.keys():
                 for oim_status_type, status in oim_statuses[workspace].items():
                     workspace.update_user_status(StatusSearchType.OIM_STATUS, oim_status_type, status)
@@ -135,7 +130,6 @@ def get_users_statuses(manager: "SessionManager", search_type: StatusSearchType)
         workday_statuses = get_users_single_source_status(manager, workspaces, StatusSearchType.WORKDAY_STATUS)
 
         for workspace in workspaces:
-            check_for_control_command()
             if workspace in oim_statuses.keys():
                 if OIMStatus.PRIMARY_STATUS in oim_statuses[workspace]:
                     workspace.update_user_status(StatusSearchType.OIM_STATUS, OIMStatus.PRIMARY_STATUS, oim_statuses[workspace][OIMStatus.PRIMARY_STATUS])
@@ -171,12 +165,10 @@ def get_users_single_source_status(manager: "SessionManager", workspaces: list[U
     driver = manager.driver
 
     for workspace in workspaces:
-        check_for_control_command()
         if workspace.is_active():
             load_new_page(manager, workspace, type_to_page[source])
     
     for workspace in workspaces:
-        check_for_control_command()
         if workspace.is_active():
             workspace_to_status[workspace] = get_status_from_profile(driver, workspace.handle, source)
 

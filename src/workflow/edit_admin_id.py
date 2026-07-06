@@ -8,7 +8,6 @@ import src.logger as logger
 from src.my_account.page import load_new_page, MyAccountPage
 import src.storage as storage
 from src.config import ADMIN_ID_WORKSPACE, ADMIND_ID_DISPLAY_PATH
-from src.control import check_for_control_command
 from datetime import datetime
 if TYPE_CHECKING:
     from src.session_manager import SessionManager
@@ -90,13 +89,11 @@ def get_admin_ids_for_application(manager: "SessionManager", app_code: str) -> d
 
     workspaces = manager.workspaces.values()
     for workspace in workspaces:
-        check_for_control_command()
         if not workspace.is_active():
             continue
         load_new_page(manager, workspace, MyAccountPage.ADMINID_CURRENT)
         
     for workspace in workspaces:
-        check_for_control_command()
         if not workspace.is_active():
             continue
         results.append(get_single_admin_id_of_app_and_login(manager.driver, workspace, app_code))
@@ -144,7 +141,6 @@ def search_for_application(manager: "SessionManager", application_code: str):
 
     selected_workspace = None
     for workspace in workspaces:
-        check_for_control_command()
         if workspace.is_active():
             selected_workspace = workspace
     
