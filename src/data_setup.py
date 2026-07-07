@@ -9,6 +9,8 @@ def setup_data_folder() -> None:
 
     (DATA_DIR / "admin_id_archive").mkdir(parents=True, exist_ok=True)
     (DATA_DIR / "chrome_profile").mkdir(parents=True, exist_ok=True)
+    (DATA_DIR / "admin_id_workspace.csv").touch(exist_ok=True)
+    (DATA_DIR / "current_admin_id_result.csv").touch(exist_ok=True)
 
     if not WORKSPACE_PATH.exists():
         WORKSPACE_PATH.write_text(

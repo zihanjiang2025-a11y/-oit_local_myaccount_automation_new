@@ -12,30 +12,63 @@ You need:
 - Google Chrome
 - VPN access required for MyAccount if not on Brown's network
 - A Brown account with permission to view and edit the target MyAccount pages
+- Application Modern CSV (free) to read and edit CSV files (optional but recommended)
 
 ## Setup
 
-From the project folder, create and activate a virtual environment:
+1. From the project folder, create and activate a virtual environment.
+
+On macOS or Linux:
 
 ```bash
 python3.12 -m venv .venv
 source .venv/bin/activate
 ```
 
-Install dependencies:
+On Windows, use Command Prompt:
+
+```bat
+py -3.12 -m venv .venv
+.venv\Scripts\activate.bat
+```
+
+2. Install dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Create a `.env` file in the project root:
+3. Create a `.env` file in the project root from `.env.example`.
+
+On macOS or Linux:
+
+```bash
+cp .env.example .env
+```
+
+On Windows Command Prompt:
+
+```bat
+copy .env.example .env
+```
+
+Then open `.env` and replace the example values with your MyAccount credentials:
 
 ```env
 MYACCOUNT_USERNAME=your_brown_username
 MYACCOUNT_PASSWORD=your_brown_password
 ```
 
-The tool stores a persistent Chrome profile at `data/chrome_profile`. This lets Chrome keep cookies and browser state between runs.
+4. Before running the program for the first time, create the required `data` files and folders:
+
+On macOS, Linux, or Windows after activating the virtual environment:
+
+```bash
+python main.py setup
+```
+
+This creates `data/workspace.csv`, `data/admin_id_workspace.csv`, `data/current_admin_id_result.csv`, `data/admin_id_archive/`, and `data/chrome_profile/` if they do not already exist.
+
 
 ## Prepare the Workspace CSV
 
@@ -67,14 +100,6 @@ brown_id,brown_login,first_name,last_name,source
 
 The tool updates `data/workspace.csv` when you run commands such as `find-users`, `extract-ids`, `extract-status`, or `save`.
 
-If you add, remove, or change users in `data/workspace.csv` while the shell is already running, reload the users before continuing:
-
-```text
-myaccount> reload
-```
-
-Do this every time you put new users into the workspace. The shell keeps users in memory, so it will not automatically see CSV edits made after startup.
-
 ## Run the Tool
 
 Start the shell:
@@ -91,35 +116,22 @@ myaccount>
 
 Enter one command at a time. During a running task, Selenium may switch browser tabs. Wait for the `myaccount>` prompt before entering the next command.
 
-## Operating Safely
-
-When the browser is switching between MyAccount windows or tabs, do not click, type, close tabs, change pages, or otherwise interfere with Chrome. Let the automation finish the current browser work and wait until the `myaccount>` prompt returns.
-
-You can use these commands when the shell is waiting for input:
-
-```text
-myaccount> stop
-myaccount> quit
-```
-
-Inside interactive prompts, you can also type `stop-task` to stop the current command and return to the shell, or `quit` to shut down the program.
-
-To quit from the main shell:
+To quit:
 
 ```text
 exit
 ```
 
-## Recommended Workflow
+## Workflow
 
 1. Put users into `data/workspace.csv`.
 2. Run `python main.py`.
-3. Search for users with `find-users`.
+3. Search for users with `find-users`. (Required before any other tasks)
 4. Extract any missing identifiers or statuses.
 5. Review and save the updated workspace.
 6. For Admin ID work, generate and carefully review the confirmation CSV before allowing edits.
-
-If you add more users to `data/workspace.csv` during the same shell session, run `reload` before searching or editing those users.
+7. If needed, replace the current users in `data/workspace.csv` with a new list of users,
+    reload the users, and repeat the steps above.
 
 Example session:
 
@@ -236,13 +248,14 @@ The tool will:
 2. Write current Admin ID results to `data/current_admin_id_result.csv`.
 3. Ask whether to generate confirmation rows.
 4. Write confirmation rows to `data/admin_id_workspace.csv`.
-5. Wait while you review and complete the CSV.
+5. Wait while you review and complete the CSV, and ask you to type `verify`.
 6. Validate the CSV.
 7. Ask you to type `ready`.
 8. Perform the edit tasks in MyAccount.
 9. Write a history CSV to `data/admin_id_archive/admin_id_run_YYYYMMDD_HHMMSS.csv`.
 
-In `data/admin_id_workspace.csv`, fill all `FILL_THIS` cells, change `confirmed` to `yes`, and do a final manual review before typing `ready` in the shell.
+In `data/admin_id_workspace.csv`, fill all `FILL_THIS` cells, review and replace `WARNING` and `ACTION REQUIRED` with `override`,
+change `confirmed` to `yes`, and do a final manual review before typing `ready` in the shell.
 
 Dates must use `MM/DD/YYYY`.
 
@@ -309,17 +322,7 @@ Shows stop instructions when no task is running.
 myaccount> stop
 ```
 
-At an interactive prompt, type `stop-task` to stop the current task and return to the shell. Do not try to stop a task by manually controlling Chrome while the browser is switching between tabs.
-
-### `quit`
-
-Exits the program.
-
-```text
-myaccount> quit
-```
-
-`exit` also works.
+During a running task, press `Ctrl+C` to stop the current task and return to the shell. The browser session stays open.
 
 ### `help`
 
