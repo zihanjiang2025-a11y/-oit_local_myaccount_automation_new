@@ -10,7 +10,7 @@ You need:
 
 - Python 3.12
 - Google Chrome
-- Network/VPN access required for MyAccount
+- VPN access required for MyAccount if not on Brown's network
 - A Brown account with permission to view and edit the target MyAccount pages
 
 ## Setup
@@ -67,6 +67,14 @@ brown_id,brown_login,first_name,last_name,source
 
 The tool updates `data/workspace.csv` when you run commands such as `find-users`, `extract-ids`, `extract-status`, or `save`.
 
+If you add, remove, or change users in `data/workspace.csv` while the shell is already running, reload the users before continuing:
+
+```text
+myaccount> reload
+```
+
+Do this every time you put new users into the workspace. The shell keeps users in memory, so it will not automatically see CSV edits made after startup.
+
 ## Run the Tool
 
 Start the shell:
@@ -83,7 +91,20 @@ myaccount>
 
 Enter one command at a time. During a running task, Selenium may switch browser tabs. Wait for the `myaccount>` prompt before entering the next command.
 
-To quit:
+## Operating Safely
+
+When the browser is switching between MyAccount windows or tabs, do not click, type, close tabs, change pages, or otherwise interfere with Chrome. Let the automation finish the current browser work and wait until the `myaccount>` prompt returns.
+
+You can use these commands when the shell is waiting for input:
+
+```text
+myaccount> stop
+myaccount> quit
+```
+
+Inside interactive prompts, you can also type `stop-task` to stop the current command and return to the shell, or `quit` to shut down the program.
+
+To quit from the main shell:
 
 ```text
 exit
@@ -97,6 +118,8 @@ exit
 4. Extract any missing identifiers or statuses.
 5. Review and save the updated workspace.
 6. For Admin ID work, generate and carefully review the confirmation CSV before allowing edits.
+
+If you add more users to `data/workspace.csv` during the same shell session, run `reload` before searching or editing those users.
 
 Example session:
 
@@ -286,7 +309,17 @@ Shows stop instructions when no task is running.
 myaccount> stop
 ```
 
-During a running task, press `Ctrl+C` to stop the current task and return to the shell. The browser session stays open.
+At an interactive prompt, type `stop-task` to stop the current task and return to the shell. Do not try to stop a task by manually controlling Chrome while the browser is switching between tabs.
+
+### `quit`
+
+Exits the program.
+
+```text
+myaccount> quit
+```
+
+`exit` also works.
 
 ### `help`
 
