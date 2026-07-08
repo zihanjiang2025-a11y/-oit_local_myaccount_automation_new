@@ -1,6 +1,6 @@
 # Brown MyAccount Automation
 
-Command-line automation for Brown University MyAccount administrative workflows. The tool opens Chrome, signs in to MyAccount, loads users from a CSV workspace, and lets an operator search users, extract identity/status fields, review Admin IDs, and perform supported Admin ID edits.
+Command-line automation for Brown University MyAccount administrative workflows. The tool opens Chrome, signs in to MyAccount, loads users from a CSV workspace, and lets an operator search users, extract identity/status fields, review Admin IDs, and perform supported Admin ID edits. The repository includes one-click setup and launcher scripts for both macOS and Windows.
 
 ## Before You Start
 
@@ -14,8 +14,29 @@ You need:
 - A Brown account with permission to view and edit the target MyAccount pages
 - Application Modern CSV (free) to read and edit CSV files (optional but recommended)
 
-## Setup
+## One-time Setup
 
+### macOS
+
+1. Install Python 3.12.
+2. Clone this repository.
+3. Create a `.env` file from `.env.example` in the project root.
+4. Fill in your Brown MyAccount credentials.
+5. Double-click `Setup.command`.
+
+---
+
+### Windows
+
+1. Install Python 3.12 (64-bit).
+2. Clone this repository.
+3. Create a `.env` file from `.env.example` in the project root.
+4. Fill in your Brown MyAccount credentials.
+5. Double-click `Setup.bat`.
+
+
+### Manual Setup (Advanced):
+Only use manual setup if the setup guides above didn't work.
 1. From the project folder, create and activate a virtual environment.
 
 On macOS or Linux:
@@ -72,7 +93,7 @@ This creates `data/workspace.csv`, `data/admin_id_workspace.csv`, `data/current_
 
 ## Prepare the Workspace CSV
 
-Create `data/workspace.csv` before running the tool. Each row represents one user. Include whichever columns you want to use for searching or extraction.
+Make sure `data/workspace.csv` is created before running the tool. Each row represents one user. Include whichever columns you want to use for searching or extraction.
 
 Common search columns:
 
@@ -125,7 +146,7 @@ exit
 ## Workflow
 
 1. Put users into `data/workspace.csv`.
-2. Run `python main.py`.
+2. Double-click `Run.command` on Mac or `Run.bat` on Windows.
 3. Search for users with `find-users`. (Required before any other tasks)
 4. Extract any missing identifiers or statuses.
 5. Review and save the updated workspace.
