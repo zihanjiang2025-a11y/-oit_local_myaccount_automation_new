@@ -96,11 +96,6 @@ class MyAccountShell:
         return parts[0].lower(), parts[1:]
 
     def _execute(self, command: Command, args: list[str]) -> None:
-        logger.info(
-            "Running command. Selenium may switch browser tabs now; "
-            "wait for the myaccount> prompt before entering another command. "
-            "Type stop-task at any prompt to return to the shell, or quit to end the program."
-        )
         try:
             command.handler(self, args)
         except StopTask:
@@ -119,7 +114,7 @@ class MyAccountShell:
     def _load_workspace(self) -> None:
         rows = load_rows_from_csv(self.workspace_path)
         self.manager.register_users_records(rows)
-        logger.success(f"Loaded {len(rows)} user row(s) from {self.workspace_path}.")
+        logger.success(f"Loaded {len(rows)} user row(s) from {self.workspace_path}.\n Start with giving the command 'find-users'.")
 
     def _handle_help(self, args: list[str]) -> None:
         for name in [

@@ -4,8 +4,30 @@ cd "$(dirname "$0")"
 
 source .venv/bin/activate
 
-python main.py
+while true
+do
+    clear
+    python main.py
 
-echo
-echo "Program finished. Press Enter to close this window."
-read
+    echo
+    echo "===================================="
+    echo "Program finished."
+    echo
+    echo "[R] Restart"
+    echo "[Q] Quit"
+    echo "===================================="
+
+    read -p "> " choice
+
+    case "$choice" in
+        [Rr])
+            ;;
+        [Qq])
+            break
+            ;;
+        *)
+            echo "Invalid option."
+            sleep 1
+            ;;
+    esac
+done
