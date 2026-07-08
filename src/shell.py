@@ -111,10 +111,10 @@ class MyAccountShell:
         except KeyboardInterrupt:
             print()
             logger.warning("Current task stopped. Returned to the main menu.")
-        #except Exception as exc:
-            #logger.error(f"{command.name} failed: {exc}")
-        #else:
-            #logger.success(f"{command.name} complete.")
+        except Exception as exc:
+            logger.error(f"{command.name} failed: {exc}")
+        else:
+            logger.success(f"{command.name} complete.")
 
     def _load_workspace(self) -> None:
         rows = load_rows_from_csv(self.workspace_path)
