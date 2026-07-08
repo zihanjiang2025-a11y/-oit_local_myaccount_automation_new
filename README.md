@@ -12,7 +12,7 @@ You need:
 - Google Chrome
 - VPN access required for MyAccount if not on Brown's network
 - A Brown account with permission to view and edit the target MyAccount pages
-- Modern CSV (free) or another spreadsheet/CSV editor to read and edit CSV files (optional but strongly recommended)
+- Modern CSV (free) editor to read and edit CSV files (optional but strongly recommended). Available at `https://www.moderncsv.com/download/`.
 
 ## Quick Start: Click-to-Setup, Then Click-to-Run
 
@@ -106,6 +106,8 @@ This creates `data/workspace.csv`, `data/admin_id_workspace.csv`, `data/current_
 ## Prepare the Workspace CSV
 
 Make sure `data/workspace.csv` is created before running the tool. Each row represents one user. Include whichever columns you want to use for searching or extraction.
+
+Modern CSV is recommended for this file because it automatically refreshes when the Python program updates the CSV. That matters for this workflow: commands such as `find-users`, `extract-ids`, `extract-status`, `get-admin-ids`, and `save` can modify output files while the tool is still running, and Modern CSV lets you see those updates without closing and reopening the file. 
 
 Common search columns:
 
