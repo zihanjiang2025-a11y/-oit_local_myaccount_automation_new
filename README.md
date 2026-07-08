@@ -12,27 +12,39 @@ You need:
 - Google Chrome
 - VPN access required for MyAccount if not on Brown's network
 - A Brown account with permission to view and edit the target MyAccount pages
-- Application Modern CSV (free) to read and edit CSV files (optional but recommended)
+- Modern CSV (free) or another spreadsheet/CSV editor to read and edit CSV files (optional but strongly recommended)
 
-## One-time Setup
+## Quick Start: Click-to-Setup, Then Click-to-Run
+
+Use the setup script once on each computer. After setup finishes, use the run script whenever you want to start the tool.
 
 ### macOS
 
 1. Install Python 3.12.
-2. Clone this repository.
+2. Clone or download this repository.
 3. Create a `.env` file from `.env.example` in the project root.
 4. Fill in your Brown MyAccount credentials.
 5. Double-click `Setup.command`.
+6. Wait for `Setup complete. Press Enter to close this window.`
+7. Add users to `data/workspace.csv`.
+8. Double-click `Run.command` whenever you want to start the tool.
+
+If macOS blocks the script the first time, right-click `Setup.command`, choose **Open**, then confirm that you want to open it.
 
 ---
 
 ### Windows
 
 1. Install Python 3.12 (64-bit).
-2. Clone this repository.
+2. Clone or download this repository.
 3. Create a `.env` file from `.env.example` in the project root.
 4. Fill in your Brown MyAccount credentials.
 5. Double-click `Setup.bat`.
+6. Wait for `Setup complete.`
+7. Add users to `data/workspace.csv`.
+8. Double-click `Run.bat` whenever you want to start the tool.
+
+Setup creates the `.venv` Python environment, installs dependencies, and creates the required `data` files and folders. Run starts the interactive `myaccount>` shell.
 
 
 ### Manual Setup (Advanced):
@@ -123,7 +135,12 @@ The tool updates `data/workspace.csv` when you run commands such as `find-users`
 
 ## Run the Tool
 
-Start the shell:
+Recommended click-to-run launchers:
+
+- macOS: double-click `Run.command`
+- Windows: double-click `Run.bat`
+
+Or start the shell manually from an activated virtual environment:
 
 ```bash
 python main.py
