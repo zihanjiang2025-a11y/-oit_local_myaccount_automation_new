@@ -515,7 +515,7 @@ def validate_date_or_mark(
 
     if is_blank(raw):
         mark_required(row, field)
-        errors.append(f"{row_label}: {field} needs to be filled.")
+        #errors.append(f"{row_label}: {field} needs to be filled.")
         return
 
     try:
