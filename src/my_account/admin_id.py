@@ -922,7 +922,7 @@ def select_performed_by(driver, name: str, brown_id: str) -> None:
     box.clear()
     box.send_keys(name)
 
-    suggestions = WebDriverWait(driver, 10).until(
+    suggestions = WebDriverWait(driver, 30).until(
         EC.presence_of_all_elements_located(
             AdminIDPage.AdminIDEditPage.PERFORMED_BY_SELECTION
         )
