@@ -25,7 +25,7 @@ class MyAccountPage(StrEnum):
     ROLES = "roles"
     GROUPS = "groups"
     ADMINID_CURRENT = "privileges"
-    ADMINID_HISTORY = "privilegehistory"
+    ADMINID_HISTORY = "privilegeshistory"
     ADMIN_ID_EDIT = "privilegeedit"
     ADMIN_ID_PURGE = "privilegepurge"
 
