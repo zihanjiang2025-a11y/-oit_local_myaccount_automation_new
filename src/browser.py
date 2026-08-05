@@ -14,19 +14,13 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 
 def launch_chrome():
-
     options = webdriver.ChromeOptions()
 
     options.add_argument(
         f"--user-data-dir={PROFILE_PATH}"
     )
 
-    service = Service(
-        ChromeDriverManager().install()
-    )
-
     driver = webdriver.Chrome(
-        service=service,
         options=options
     )
 
