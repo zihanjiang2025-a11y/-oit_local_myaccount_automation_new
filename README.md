@@ -316,7 +316,12 @@ myaccount> open-page overview
 myaccount> open-page student
 myaccount> open-page employee
 myaccount> open-page privileges
+myaccount> open-page privilegeedit
+myaccount> open-page privilegeedit APP_CODE
 ```
+
+When `privilegeedit` is selected, choose an assigned application to open its
+edit page for each active user, or choose `new` to open a new application edit.
 
 Common page values:
 

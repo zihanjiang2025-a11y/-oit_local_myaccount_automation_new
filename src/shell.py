@@ -159,7 +159,21 @@ class MyAccountShell:
 
     def _handle_open_page(self, args: list[str]) -> None:
         page = self._read_choice(args, "Page", [page.value for page in MyAccountPage])
-        self.manager.open_users_page(MyAccountPage(page))
+        selected_page = MyAccountPage(page)
+        if selected_page != MyAccountPage.ADMIN_ID_EDIT:
+            self.manager.open_users_page(selected_page)
+            return
+
+        application_codes = self.manager.get_editable_admin_id_applications()
+        choice = self._read_choice(
+            args[1:],
+            "Application edit (choose 'new' to add a new application)",
+            ["new", *application_codes],
+        )
+        self.manager.open_users_page(
+            selected_page,
+            None if choice == "new" else choice,
+        )
 
     def _handle_save(self, args: list[str]) -> None:
         self.manager.commit_user_record_updates(self.workspace_path)

@@ -84,13 +84,24 @@ class SessionManager:
         logger.info("Searching " + str(len(self.user_records)) + " users...")
         find_users.find_users_workflow(self, search_fields)
 
-    def open_users_page(self, page: MyAccountPage):
+    def get_editable_admin_id_applications(self) -> list[str]:
+        if (not self.session_status["browser_launched"]
+        or not self.session_status["myaccount_login"]):
+            logger.warning("Make sure Chrome is launched and MyAccount is logged in before proceeding.")
+            raise SystemError("Chrome or MyAccount not ready.")
+        return find_users.get_editable_admin_id_applications(self)
+
+    def open_users_page(
+        self,
+        page: MyAccountPage,
+        admin_application_code: str | None = None,
+    ):
         if (not self.session_status["browser_launched"] 
         or not self.session_status["myaccount_login"]):
             logger.warning("Make sure Chrome is launched and MyAccount is logged in" \
             "before proceeding.")
             raise SystemError("Chrome or MyAccount not ready.")
-        find_users.open_users_page_workflows(self, page)
+        find_users.open_users_page_workflows(self, page, admin_application_code)
     
     #TODO: Add success logger prompt for all types of searches/extractions
     def extract_users_ids(self, ids_extracting: list[str]):
