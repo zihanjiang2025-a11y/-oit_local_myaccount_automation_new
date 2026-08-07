@@ -72,6 +72,7 @@ class MyAccountShell:
             Command("get-admin-ids", MyAccountShell._handle_get_admin_ids, "Write current Admin IDs for one application."),
             Command("edit-admin-ids", MyAccountShell._handle_edit_admin_ids, "Add, revoke, or purge Admin IDs."),
             Command("open-page", MyAccountShell._handle_open_page, "Open a MyAccount page for active users."),
+            Command("switch-user", MyAccountShell._handle_switch_user, "Switch to one user's browser tab."),
             Command("save", MyAccountShell._handle_save, "Save user record updates to the workspace CSV."),
             Command("reload", MyAccountShell._handle_reload, "Reload users from the workspace CSV."),
             Command("stop", MyAccountShell._handle_stop, "Show stop instructions for the current task."),
@@ -124,6 +125,7 @@ class MyAccountShell:
             "get-admin-ids",
             "edit-admin-ids",
             "open-page",
+            "switch-user",
             "save",
             "reload",
             "stop-task",
@@ -175,6 +177,26 @@ class MyAccountShell:
             None if choice == "new" else choice,
         )
 
+    def _handle_switch_user(self, args: list[str]) -> None:
+        if len(args) >= 2:
+            raw_field, value_start = args[0], 1
+            if len(args) >= 3:
+                combined_field = " ".join(args[:2])
+                try:
+                    self._normalize_search_field(combined_field)
+                except ValueError:
+                    pass
+                else:
+                    raw_field, value_start = combined_field, 2
+            search_value = " ".join(args[value_start:])
+        else:
+            raw_field = args[0] if args else controlled_input("Search field:\n> ").strip()
+            search_value = controlled_input("Search value:\n> ").strip()
+
+        search_field = self._normalize_search_field(raw_field)
+        workspace = self.manager.switch_to_user(search_field, search_value)
+        logger.info(f"Switched to browser tab for {self.manager.workspace_label(workspace)}.")
+
     def _handle_save(self, args: list[str]) -> None:
         self.manager.commit_user_record_updates(self.workspace_path)
 
@@ -211,6 +233,24 @@ class MyAccountShell:
             if selected is not None:
                 return selected
             logger.warning("Choose 1, 2, 3, add, revoke, or purge.")
+
+    def _normalize_search_field(self, field: str) -> str:
+        normalized = field.strip().casefold().replace("-", "_").replace(" ", "_")
+        aliases = {
+            "firstname": "first_name",
+            "lastname": "last_name",
+            "preferred_first_name": "pref_first_name",
+            "preferred_last_name": "pref_last_name",
+            "brownid": "brown_id",
+            "brownlogin": "brown_login",
+            "netid": "brown_netid",
+        }
+        normalized = aliases.get(normalized, normalized)
+        if normalized not in SEARCH_FIELDS:
+            raise ValueError(
+                f"Unknown search field: {field}. Valid fields: {', '.join(sorted(SEARCH_FIELDS))}"
+            )
+        return normalized
 
     def _read_field_groups(
         self,

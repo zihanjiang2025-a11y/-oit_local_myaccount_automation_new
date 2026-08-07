@@ -207,6 +207,23 @@ myaccount> find-users first_name,last_name brown_id
 
 Each argument is one search round. `first_name,last_name` means one round that searches with both fields together.
 
+### `switch-user`
+
+Switches Chrome to the existing search-result or user page tab for one loaded user. Run
+`find-users` first so each user has a browser tab.
+
+```text
+myaccount> switch-user brown_login jdoe
+myaccount> switch-user brown_id 123456789
+myaccount> switch-user first_name Jane
+myaccount> switch-user last name Smith
+```
+
+Running `switch-user` without arguments prompts for the search field and value. Values are
+matched case-insensitively. Friendly field aliases such as `firstname`, `lastname`, `brownid`,
+`brownlogin`, and `netid` are accepted. If multiple users match, the command does not switch
+tabs and asks you to use a more specific field.
+
 ### `extract-ids`
 
 Extracts identity fields from matched users and writes them back to the workspace.

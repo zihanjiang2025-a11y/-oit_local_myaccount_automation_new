@@ -4,7 +4,7 @@ from src.workflow import initialization, find_users, extract_from_users, edit_ad
 import src.logger as logger
 from src.storage import write_records_to_csv
 from src.browser import close_tab
-from src.definitions import StatusSearchType
+from src.definitions import SEARCH_FIELDS, PersonalInfo, StatusSearchType
 from src.my_account.page import MyAccountPage
 from src.models.admin_id_models import AdminIDOperation
 from src.config import WORKSPACE_PATH
@@ -83,6 +83,88 @@ class SessionManager:
             raise SystemError("Chrome or MyAccount not ready.")
         logger.info("Searching " + str(len(self.user_records)) + " users...")
         find_users.find_users_workflow(self, search_fields)
+
+    def switch_to_user(self, search_field: str, search_value: str) -> UserWorkspace:
+        """Switch the browser to the tab belonging to one uniquely matched user."""
+        if search_field not in SEARCH_FIELDS:
+            raise ValueError(f"Unsupported search field: {search_field}")
+
+        normalized_value = self._normalize_search_value(search_value)
+        if not normalized_value:
+            raise ValueError("A search value is required.")
+
+        matches = [
+            workspace
+            for workspace in self.workspaces.values()
+            if normalized_value in self._workspace_values(workspace, search_field)
+        ]
+
+        if not matches:
+            raise ValueError(
+                f"No loaded user matches {search_field}={search_value!r}."
+            )
+        if len(matches) > 1:
+            labels = ", ".join(self.workspace_label(workspace) for workspace in matches)
+            raise ValueError(
+                f"Multiple loaded users match {search_field}={search_value!r}: {labels}. "
+                "Use a more specific field such as brown_login or brown_id."
+            )
+
+        workspace = matches[0]
+        if not workspace.has_handle():
+            raise ValueError(
+                f"{self.workspace_label(workspace)} has no browser tab. Run find-users first."
+            )
+        if self.driver is None or workspace.handle not in self.driver.window_handles:
+            raise ValueError(
+                f"The browser tab for {self.workspace_label(workspace)} is no longer open. "
+                "Run find-users again to recreate it."
+            )
+
+        self.driver.switch_to.window(workspace.handle)
+        return workspace
+
+    @staticmethod
+    def _normalize_search_value(value) -> str:
+        if value is None:
+            return ""
+        return str(value).strip().casefold()
+
+    def _workspace_values(self, workspace: UserWorkspace, search_field: str) -> set[str]:
+        record = workspace.user_record
+        candidates = [
+            record.searchable_ids.get(search_field),
+            record.user_ids.get(search_field),
+            workspace.identities.get(search_field),
+            workspace.extracted_ids.get(search_field),
+            workspace.hidden_ids.get(search_field),
+        ]
+        candidates.extend(search.get(search_field) for search in workspace.searches)
+        return {
+            normalized
+            for candidate in candidates
+            if (normalized := self._normalize_search_value(candidate))
+        }
+
+    @staticmethod
+    def workspace_label(workspace: UserWorkspace) -> str:
+        record = workspace.user_record
+        brown_login = (
+            workspace.identities.get(PersonalInfo.BROWN_LOGIN)
+            or record.searchable_ids.get(PersonalInfo.BROWN_LOGIN)
+            or record.user_ids.get(PersonalInfo.BROWN_LOGIN)
+        )
+        brown_id = (
+            workspace.identities.get(PersonalInfo.BROWN_ID)
+            or record.searchable_ids.get(PersonalInfo.BROWN_ID)
+            or record.user_ids.get(PersonalInfo.BROWN_ID)
+        )
+        identifiers = [
+            f"brown_login={brown_login}" if brown_login else None,
+            f"brown_id={brown_id}" if brown_id else None,
+        ]
+        details = ", ".join(identifier for identifier in identifiers if identifier)
+        return f"row {record.short_id}" + (f" ({details})" if details else "")
 
     def get_editable_admin_id_applications(self) -> list[str]:
         if (not self.session_status["browser_launched"]
