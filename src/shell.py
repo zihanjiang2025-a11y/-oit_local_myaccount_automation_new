@@ -27,9 +27,18 @@ class MyAccountShell:
 
     def run(self) -> None:
         self._print_banner()
-        self.manager = SessionManager()
-        self.manager.initilize()
-        self._load_workspace()
+        try:
+            self.manager = SessionManager()
+            self.manager.initilize()
+            self._load_workspace()
+        except (QuitProgram, KeyboardInterrupt):
+            print()
+            self._handle_exit([])
+            return
+        except Exception as exc:
+            logger.error(f"Unable to start session: {exc}")
+            self._handle_exit([])
+            return
 
         while self.running:
             try:
