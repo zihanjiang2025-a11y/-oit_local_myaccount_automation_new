@@ -46,9 +46,10 @@ If macOS blocks the script the first time, right-click `Setup.command`, choose *
 
 Setup creates the `.venv` Python environment, installs dependencies, and creates the required `data` files and folders. Run starts the interactive `myaccount>` shell.
 
-
 ### Manual Setup (Advanced):
+
 Only use manual setup if the setup guides above didn't work.
+
 1. From the project folder, create and activate a virtual environment.
 
 On macOS or Linux:
@@ -102,12 +103,11 @@ python main.py setup
 
 This creates `data/workspace.csv`, `data/admin_id_workspace.csv`, `data/current_admin_id_result.csv`, `data/admin_id_archive/`, and `data/chrome_profile/` if they do not already exist.
 
-
 ## Prepare the Workspace CSV
 
 Make sure `data/workspace.csv` is created before running the tool. Each row represents one user. Include whichever columns you want to use for searching or extraction.
 
-Modern CSV is recommended for this file because it automatically refreshes when the Python program updates the CSV. That matters for this workflow: commands such as `find-users`, `extract-ids`, `extract-status`, `get-admin-ids`, and `save` can modify output files while the tool is still running, and Modern CSV lets you see those updates without closing and reopening the file. 
+Modern CSV is recommended for this file because it automatically refreshes when the Python program updates the CSV. That matters for this workflow: commands such as `find-users`, `extract-ids`, `extract-status`, `get-admin-ids`, and `save` can modify output files while the tool is still running, and Modern CSV lets you see those updates without closing and reopening the file.
 
 Common search columns:
 
@@ -171,7 +171,7 @@ exit
 5. Review and save the updated workspace.
 6. For Admin ID work, generate and carefully review the confirmation CSV before allowing edits.
 7. If needed, replace the current users in `data/workspace.csv` with a new list of users,
-    reload the users, and repeat the steps above.
+   reload the users, and repeat the steps above.
 
 Example session:
 
@@ -255,6 +255,10 @@ Supported extracted fields include:
 - `personal_cell`
 - `brown_id`
 - `source`
+- `workday_id`
+- `advance_id`
+- `barcode`
+- `iso`
 
 ### `extract-status`
 

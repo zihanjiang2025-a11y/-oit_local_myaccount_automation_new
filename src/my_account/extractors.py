@@ -3,10 +3,10 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from src.models.user_record import UserRecord
 from src.models.user_workspace import UserWorkspace
-from src.my_account.locator import SearchResultPage, OverviewPage, StudentPage, EmployeePage
-from src.definitions import PersonalInfo, SEARCH_PAGE_IDS, OVERVIEW_PAGE_IDS, UserSearchStatus, StatusSearchType, WorkdayStatus, BannerStatus, OIMStatus, EXTRACTABLE_STATUS
+from src.my_account.locator import SearchResultPage, OverviewPage, EServicePage, StudentPage, EmployeePage
+from src.definitions import PersonalInfo, SEARCH_PAGE_IDS, OVERVIEW_PAGE_IDS, ESERVICE_PAGE_IDS, StatusSearchType, WorkdayStatus, BannerStatus, OIMStatus, EXTRACTABLE_STATUS
 from src.config import OVERVIEW_URL_TEMPLATE, PAGE_TIMEOUT
-from src.browser import wait_for_overview_page, open_new_tab_get_handle, close_tab, wait_for_student_page, wait_for_employee_page
+from src.browser import wait_for_overview_page, wait_for_eservice_page, wait_for_student_page, wait_for_employee_page
 from src.my_account.page import load_new_page, MyAccountPage
 from typing import TYPE_CHECKING
 
@@ -24,11 +24,15 @@ def get_users_ids(manager: "SessionManager", ids_extracting: list[str]) -> None:
 
     search_page_ids = []
     overview_page_ids = []
+    eservice_page_ids = []
+
     for id_type in ids_extracting:
         if id_type in SEARCH_PAGE_IDS:
             search_page_ids.append(id_type)
         elif id_type in OVERVIEW_PAGE_IDS:
             overview_page_ids.append(id_type)
+        elif id_type in ESERVICE_PAGE_IDS:
+            eservice_page_ids.append(id_type)
         else:
             raise ValueError("id_type not supported to be extracted")
 
@@ -53,7 +57,23 @@ def get_users_ids(manager: "SessionManager", ids_extracting: list[str]) -> None:
             load_new_page(manager, workspace, MyAccountPage.OVERVIEW)
             
         for workspace in workspaces:
+            if not workspace.is_active():
+                continue
             ids = get_ids_from_profile(driver, workspace.handle, overview_page_ids)
+            for id_type, id in ids.items():
+                workspace.extracted_ids[id_type] = id
+
+    if eservice_page_ids:
+        for workspace in workspaces:
+            if not workspace.is_active():
+                continue
+
+            load_new_page(manager, workspace, MyAccountPage.ESERVICES)
+
+        for workspace in workspaces:
+            if not workspace.is_active():
+                continue
+            ids = get_ids_from_eservice(driver, workspace.handle, eservice_page_ids)
             for id_type, id in ids.items():
                 workspace.extracted_ids[id_type] = id
 
@@ -91,6 +111,21 @@ def get_ids_from_profile(driver: WebDriver, handle: str, ids_extracting: list[st
     for id_type in ids_extracting:
         element = driver.find_element(
             *OverviewPage.SEARCH_RESULT_LOCATORS[id_type]
+        )
+        ids_extracted[id_type] = element.text.strip()
+    
+    return ids_extracted
+
+def get_ids_from_eservice(driver: WebDriver, handle: str, ids_extracting: list[str]) -> dict[str, str]:
+    
+    driver.switch_to.window(handle)
+    wait_for_eservice_page(driver)
+
+    ids_extracted = {}
+
+    for id_type in ids_extracting:
+        element = driver.find_element(
+            *EServicePage.SEARCH_RESULT_LOCATORS[id_type]
         )
         ids_extracted[id_type] = element.text.strip()
     

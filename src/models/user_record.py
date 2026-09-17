@@ -43,7 +43,6 @@ class UserRecord:
         if id_type in WorkspaceDocumentations.FIELDS:
             return
         if id_type not in EXTRACTABLE_IDS and id_type not in SEARCH_FIELDS:
-            #TODO: Consider status fields
             raise ValueError("Invalid id_type")
         if id_type in EXTRACTABLE_IDS:
             self.user_ids[id_type] = id
@@ -109,23 +108,25 @@ class UserRecord:
         """
         #IDs used for searching wouldn't be updated
 
+        updates = ids.copy()
+
         for identity_type in WORKSPACE_IDENTIFICATIONS:
-            if identity_type in self.user_ids.keys() and identity_type in ids.keys():
-                if self.user_ids[identity_type] is not None and ids[identity_type] is not None:
-                    if ids[identity_type] != self.user_ids[identity_type]:
+            if identity_type in self.user_ids.keys() and identity_type in updates.keys():
+                if self.user_ids[identity_type] is not None and updates[identity_type] is not None:
+                    if updates[identity_type] != self.user_ids[identity_type]:
                         self.workspace.blocked_reason = "User brown_id/brown_login doesn't match with UserRecord."
                         break
 
         to_be_del = []
-        for id_type in ids.keys():
+        for id_type in updates.keys():
             for search in self.workspace.searches:
                 if id_type in search.keys() and search[id_type] is not None:
                     to_be_del.append(id_type)
  
         for id_type in to_be_del:
-            del ids[id_type]
+            del updates[id_type]
 
-        self.add_multiple_ids (ids)
+        self.add_multiple_ids (updates)
 
     def receive_status_updates(
         self,
@@ -158,6 +159,7 @@ class UserRecord:
     def generate_row_data(self) -> list[dict[str, str]]:
         row_data = {}
         row_data.update(self.user_ids)
+        row_data.update(self.searchable_ids)
         '''
         row_data["user_found"] = self.workspace.user_found
 

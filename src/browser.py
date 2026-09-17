@@ -5,7 +5,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from src.config import PROFILE_PATH, PAGE_TIMEOUT
-from src.my_account.locator import OverviewPage, StudentPage, EmployeePage, AdminIDPage
+from src.my_account.locator import OverviewPage, EServicePage, StudentPage, EmployeePage, AdminIDPage
 import src.logger as logger
 
 from selenium import webdriver
@@ -83,6 +83,14 @@ def wait_for_overview_page(driver: WebDriver):
     wait.until(
         EC.presence_of_element_located(
             OverviewPage.LOCATOR
+        )
+    )
+
+def wait_for_eservice_page(driver: WebDriver):
+    wait = WebDriverWait(driver, PAGE_TIMEOUT)
+    wait.until(
+        EC.presence_of_element_located(
+            EServicePage.LOCATOR
         )
     )
 

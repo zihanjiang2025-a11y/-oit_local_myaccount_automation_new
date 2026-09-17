@@ -192,7 +192,18 @@ OVERVIEW_PAGE_IDS = {
     PersonalInfo.SOURCE,
 }
 
-EXTRACTABLE_IDS = SEARCH_PAGE_IDS | OVERVIEW_PAGE_IDS
+# =====================================
+# Eservice Page
+# =====================================
+
+ESERVICE_PAGE_IDS = {
+    PersonalInfo.WORKDAY_ID,
+    PersonalInfo.BARCODE,
+    PersonalInfo.ADVANCE_ID,
+    PersonalInfo.ISO
+}
+
+EXTRACTABLE_IDS = SEARCH_PAGE_IDS | OVERVIEW_PAGE_IDS | ESERVICE_PAGE_IDS
 
 
 # =====================================

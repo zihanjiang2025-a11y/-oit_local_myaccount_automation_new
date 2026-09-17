@@ -171,6 +171,112 @@ class OverviewPage:
         AFFILIATE_END
     }
 
+
+class EServicePage:
+
+    BROWN_ID = (
+        By.XPATH,
+        "//b[normalize-space()='Brown ID']/following-sibling::div[1]"
+    )
+
+    BROWN_LOGIN = (
+        By.XPATH,
+        "//b[normalize-space()='Username']/following-sibling::div[1]"
+    )
+
+    SOURCE = (
+        By.XPATH,
+        "//b[normalize-space()='Source System']/following-sibling::div[1]"
+    )
+
+    PREF_FIRST = (
+        By.XPATH,
+        "//b[normalize-space()='Preferred First:']/following-sibling::div[1]"
+    )
+
+    PREF_LAST = (
+        By.XPATH,
+        "//b[normalize-space()='Preferred LAST:']/following-sibling::div[1]"
+    )
+
+    PERSONAL_EMAIL = (
+        By.XPATH,
+        "//b[normalize-space()='Personal Email:']/following-sibling::div[1]"
+    )
+
+    PERSONAL_CELL = (
+        By.XPATH,
+        "//b[normalize-space()='Personal Cell:']/following-sibling::div[1]"
+    )
+
+    NETID = (
+        By.XPATH,
+        "//b[normalize-space()='Net ID:']/following-sibling::div[1]"
+    )
+
+    BIRTHDAY = (
+        By.XPATH,
+        "//b[normalize-space()='Birthdate:']/following-sibling::div[1]"
+    )
+
+    FORMATTED_NAME = (
+        By.XPATH,
+        "//b[normalize-space()='Formatted Name:']/following-sibling::div[1]"
+    )
+
+    ISO = (
+        By.XPATH,
+        "//b[normalize-space(.)='ISO:']/following-sibling::div[1]"
+    )
+
+    BARCODE = (
+        By.XPATH,
+        "//b[normalize-space(.)='Barcode:']/following-sibling::div[1]"
+    )
+
+    WORKDAY_ID =  (
+        By.XPATH,
+        "//b[normalize-space(.)='Workday ID:']/following-sibling::div[1]"
+    )
+
+    ADVANCE_ID =  (
+        By.XPATH,
+        "//b[normalize-space(.)='Advance ID:']/following-sibling::div[1]"
+    )
+
+
+    LOCATOR = WORKDAY_ID
+
+    #Mapping PersonalInfo to these locators
+    SEARCH_RESULT_LOCATORS = {
+    PersonalInfo.BROWN_LOGIN:
+        BROWN_LOGIN,
+    PersonalInfo.PERSONAL_EMAIL:
+        PERSONAL_EMAIL,
+    PersonalInfo.SOURCE:
+        SOURCE,
+    PersonalInfo.PERSONAL_CELL:
+        PERSONAL_CELL,
+    PersonalInfo.BROWN_ID:
+        BROWN_ID,
+    PersonalInfo.BIRTHDAY:
+        BIRTHDAY,
+    PersonalInfo.BROWN_NETID:
+        NETID,
+    PersonalInfo.PREF_FIRST_NAME:
+        PREF_FIRST,
+    PersonalInfo.PREF_LAST_NAME:
+        PREF_LAST,
+    PersonalInfo.ISO:
+        ISO,
+    PersonalInfo.BARCODE:
+        BARCODE,
+    PersonalInfo.WORKDAY_ID:
+        WORKDAY_ID,
+    PersonalInfo.ADVANCE_ID:
+        ADVANCE_ID,
+    }
+
 class StudentPage:
 
     BROWN_ID = (
