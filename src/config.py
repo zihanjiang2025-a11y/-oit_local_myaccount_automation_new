@@ -27,12 +27,11 @@ MAX_SEARCHES = 3
 #Browser Settings
 PROFILE_PATH = DATA_DIR / "chrome_profile"
 
-ADMIND_ID_DISPLAY_PATH = DATA_DIR / "current_admin_id_result.csv"
-
 #Storage and Data Settings:
 WORKSPACE_PATH = "data/workspace.csv"
 ADMIN_ID_WORKSPACE = "data/admin_id_workspace.csv"
-ADMIND_ID_ARCHIVE = "data/admin_id_archive"
+ADMIN_ID_ARCHIVE = "data/admin_id_archive"
+ADMIN_ID_DISPLAY_PATH = "data/current_admin_id_result.csv"
 
 MAX_USERS = 9999999
 LOGIN_TIMEOUT = 120

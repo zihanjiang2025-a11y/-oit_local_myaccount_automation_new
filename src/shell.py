@@ -1,7 +1,10 @@
 from collections.abc import Callable
 from dataclasses import dataclass
 
-from src.config import WORKSPACE_PATH
+from src.config import PROJECT_ROOT, WORKSPACE_PATH
+from src.csv_opener import (
+    CSV_FILES, ModernCSVNotFoundError, open_csv_files, partition_csv_paths,
+)
 from src.control import QuitProgram, StopTask, controlled_input
 from src.definitions import EXTRACTABLE_IDS, SEARCH_FIELDS, StatusSearchType
 from src.models.admin_id_models import AdminIDOperation
@@ -31,6 +34,7 @@ class MyAccountShell:
             self.manager = SessionManager()
             self.manager.initilize()
             self._load_workspace()
+            logger.info("Do you have the CSV files ready? Start with entering 'open_csvs' to open necessary CSV files.")
         except (QuitProgram, KeyboardInterrupt):
             print()
             self._handle_exit([])
@@ -80,6 +84,7 @@ class MyAccountShell:
             Command("extract-status", MyAccountShell._handle_extract_status, "Extract user status fields."),
             Command("get-admin-ids", MyAccountShell._handle_get_admin_ids, "Write current Admin IDs for one application."),
             Command("edit-admin-ids", MyAccountShell._handle_edit_admin_ids, "Add, revoke, or purge Admin IDs."),
+            Command("open-csvs", MyAccountShell._handle_open_csvs, "Open selected CSV files in a desktop application."),
             Command("open-page", MyAccountShell._handle_open_page, "Open a MyAccount page for active users."),
             Command("switch-user", MyAccountShell._handle_switch_user, "Switch to one user's browser tab."),
             Command("save", MyAccountShell._handle_save, "Save user record updates to the workspace CSV."),
@@ -125,7 +130,7 @@ class MyAccountShell:
     def _load_workspace(self) -> None:
         rows = load_rows_from_csv(self.workspace_path)
         self.manager.register_users_records(rows)
-        logger.success(f"Loaded {len(rows)} user row(s) from {self.workspace_path}.\n Start with giving the command 'find-users'.")
+        logger.success(f"Loaded {len(rows)} user row(s) from {self.workspace_path}.\n Start with 'find-users'.")
 
     def _handle_help(self, args: list[str]) -> None:
         for name in [
@@ -134,6 +139,7 @@ class MyAccountShell:
             "extract-status",
             "get-admin-ids",
             "edit-admin-ids",
+            "open-csvs",
             "open-page",
             "switch-user",
             "save",
@@ -168,6 +174,57 @@ class MyAccountShell:
         application_code = args[0] if args else controlled_input("Application code:\n> ").strip()
         operation = self._read_admin_id_operation(args[1:])
         self.manager.edit_admin_id(application_code, operation)
+
+    def _handle_open_csvs(self, args: list[str]) -> None:
+        if args:
+            raise ValueError("Use open-csvs without arguments, then choose from the menus.")
+        application = self._read_choice(
+            [], "Application", ["Modern CSV", "System default application"],
+        )
+        labels = [path.relative_to(PROJECT_ROOT).as_posix() for path in CSV_FILES]
+        print("CSV files (enter numbers separated by commas or spaces):")
+        self._print_numbered_options(labels, start=1)
+        while True:
+            tokens = self._split_fields(controlled_input("> ").strip())
+            if tokens and all(
+                token.isdigit() and 1 <= int(token) <= len(CSV_FILES)
+                for token in tokens
+            ):
+                # Preserve selection order without opening a file twice.
+                indexes = list(dict.fromkeys(int(token) - 1 for token in tokens))
+                selected = [CSV_FILES[index] for index in indexes]
+                break
+            logger.warning("Choose at least one listed number, for example 1,3.")
+
+        existing, missing = partition_csv_paths(selected)
+        if missing:
+            print("Missing files (or paths that are not regular files):")
+            for path in missing:
+                print(f"- {path.relative_to(PROJECT_ROOT).as_posix()}")
+        if not existing:
+            logger.info("No selected files exist. No application was launched.")
+            return
+        if missing and not self._confirm_csv_open("Open the existing files?"):
+            logger.info("Opening cancelled.")
+            return
+        try:
+            open_csv_files(existing, application)
+        except ModernCSVNotFoundError:
+            logger.warning("Modern CSV could not be found on this Windows computer.")
+            if not self._confirm_csv_open("Use the system-default application instead?"):
+                logger.info("Opening cancelled.")
+                return
+            open_csv_files(existing, "System default application")
+        logger.info(f"Requested opening {len(existing)} CSV file(s).")
+
+    def _confirm_csv_open(self, prompt: str) -> bool:
+        while True:
+            answer = controlled_input(f"{prompt} [y/N] ").strip().casefold()
+            if answer in {"y", "yes"}:
+                return True
+            if answer in {"", "n", "no"}:
+                return False
+            logger.warning("Enter yes or no.")
 
     def _handle_open_page(self, args: list[str]) -> None:
         page = self._read_choice(args, "Page", [page.value for page in MyAccountPage])

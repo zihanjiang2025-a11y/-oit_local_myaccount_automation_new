@@ -1,4 +1,5 @@
 import pandas as pd
+import csv
 from src.definitions import SEARCH_FIELDS
 from src.control import controlled_input
 
@@ -26,6 +27,14 @@ def load_rows_from_csv(path: str) -> list[dict]:
         rows.append(row_data)
 
     return rows
+
+def load_columns_from_csv(path: str) -> dict[list]:
+
+    with open("data.csv") as file:
+        reader = csv.reader(file)
+        rows = list(reader)
+
+    columns = list(zip(*rows))
 
 
 def ask_search_fields(columns: list[str]) -> list[str]:

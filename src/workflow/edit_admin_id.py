@@ -7,7 +7,7 @@ from src.models.admin_id_models import AdminIDOperation, AdminIdHistoryEntry, Ad
 import src.logger as logger
 from src.my_account.page import load_new_page, MyAccountPage
 import src.storage as storage
-from src.config import ADMIN_ID_WORKSPACE, ADMIND_ID_DISPLAY_PATH
+from src.config import ADMIN_ID_WORKSPACE, ADMIN_ID_DISPLAY_PATH
 from datetime import datetime
 if TYPE_CHECKING:
     from src.session_manager import SessionManager
@@ -129,7 +129,7 @@ def get_admin_ids_for_application(manager: "SessionManager", app_code: str) -> d
             row["notes"] = result.get("notes", "")
             rows.append(row)
 
-    storage.write_records_to_csv(rows, ADMIND_ID_DISPLAY_PATH)
+    storage.write_records_to_csv(rows, ADMIN_ID_DISPLAY_PATH)
     logger.success("AdminIDs for application: " + app_code + " for all users have been extracted and outputed in file: current_admin_id_result.")
 
     return brown_login_to_admin_id_row
