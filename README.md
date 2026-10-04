@@ -166,7 +166,7 @@ exit
 
 1. Put users into `data/workspace.csv`.
 2. Double-click `Run.command` on Mac or `Run.bat` on Windows.
-3. Search for users with `find-users`. (Required before any other tasks)
+3. Search for users with `find-users` before tasks that operate on matched users. You can use `open-csvs` to inspect the CSV files before searching.
 4. Extract any missing identifiers or statuses.
 5. Review and save the updated workspace.
 6. For Admin ID work, generate and carefully review the confirmation CSV before allowing edits.
@@ -328,6 +328,48 @@ For revoke operations, use one of these expiry reasons:
 
 For add operations, Banner and OIM users may require attention fields. The tool validates those fields before creating tasks.
 
+### `open-csvs`
+
+Opens one or more project CSV files in Modern CSV or your system's default application. Supported on macOS and Windows. Run this command at the `myaccount>` prompt without arguments; it does not require running `find-users` first.
+
+```text
+myaccount> open-csvs
+Application:
+1. Modern CSV
+2. System default application
+> 1
+CSV files (enter numbers separated by commas or spaces):
+1. data/workspace.csv
+2. data/admin_id_workspace.csv
+3. data/current_admin_id_result.csv
+> 1,3
+```
+
+Enter `1` or `2` to choose an application. Then enter one or more file numbers separated by commas or spaces, such as `1,3`, `1 3`, or `1,2,3`. Repeated file numbers are opened only once. Invalid or empty file selections prompt you to choose again.
+
+| Number | File | Purpose |
+| --- | --- | --- |
+| 1 | `data/workspace.csv` | Main user workspace. |
+| 2 | `data/admin_id_workspace.csv` | Admin ID edit confirmation file. |
+| 3 | `data/current_admin_id_result.csv` | Most recent current Admin ID results. |
+
+File locations are resolved from the project directory, regardless of the terminal's current directory. The command opens existing files; it does not create missing files, read their contents, save user records, or perform MyAccount edits. Normal shell startup still opens Chrome, signs in, and loads the workspace before this command becomes available.
+
+**Missing files:** The command lists selected paths that are missing or are not regular files. If any selected files exist, it asks:
+
+```text
+Open the existing files? [y/N]
+```
+
+Enter `y` or `yes` to continue. Enter `n`, `no`, or press Enter to cancel. If none of the selected files exist, no application is launched.
+
+**Application behavior:**
+
+- **macOS:** Choosing Modern CSV explicitly requests that application. Choosing the system default uses the normal macOS CSV file association. If Modern CSV is unavailable, the command reports a failure; choose the system-default option on a new run.
+- **Windows:** Choosing the system default uses the normal Windows CSV file association. Choosing Modern CSV searches registered application paths, the executable search path, and common installation folders. If it cannot be found, the command offers `Use the system-default application instead? [y/N]`. Enter `y` or `yes` to accept; Enter cancels. Portable installations in other folders may not be discovered.
+
+At an input prompt, enter `stop` or `stop-task` to return to the main shell, or `quit` or `exit` to leave the shell. An opening request does not wait for you to finish using the editor.
+
 ### `open-page`
 
 Opens a MyAccount page for each active matched user.
@@ -428,3 +470,7 @@ If login times out, confirm your credentials, MyAccount access, Duo/MFA status, 
 If user search returns no match, check that the workspace CSV has valid values in the fields you selected for `find-users`.
 
 If validation keeps rewriting `data/admin_id_workspace.csv`, read the warnings printed in the shell. Protected fields such as `brown_id`, `brown_login`, `application_code`, `operation`, and extracted status fields cannot be changed in the confirmation file unless the tool explicitly asks for an override.
+
+If `open-csvs` reports missing files, check that the selected files exist under this project's `data/` directory. The command does not generate them. Use `get-admin-ids` to generate current Admin ID results and the normal `edit-admin-ids` workflow to generate its confirmation file.
+
+If a CSV cannot be opened with the system-default option, configure an application for `.csv` files in your operating system. On Windows, if Modern CSV is installed but is not discovered, accept the default-app fallback or set Modern CSV as the default CSV application.

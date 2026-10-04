@@ -122,7 +122,7 @@ class MyAccountShell:
             print()
             logger.warning("Current task stopped. Returned to the main menu.")
         except Exception as exc:
-            logger.error(f"{command.name} failed: {exc}")
+           logger.error(f"{command.name} failed: {exc}")
         else:
             logger.success(f"{command.name} complete.")
         
