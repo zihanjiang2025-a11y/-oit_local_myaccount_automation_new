@@ -8,14 +8,14 @@ DATA_DIR = PROJECT_ROOT / "data"
 load_dotenv()
 
 #MyAccount URL
-SEARCH_BASE = "https://myaccount.brown.edu/person/search"
+SEARCH_BASE = "https://admin.myaccount.brown.edu/person/search"
 
 OVERVIEW_URL_TEMPLATE = (
     "https://myaccount.brown.edu/person/overview/{brown_id}"
 )
 
 MYACCOUNT_USER_PAGE_URL_TEMPLATE = (
-    "https://myaccount.brown.edu/person/{user_page}/{brown_id}"
+    "https://admin.myaccount.brown.edu/person/{user_page}/{brown_id}"
 )
 
 #User Credentials
